@@ -589,6 +589,52 @@
       height: 100%;
     }
 
+    /* Map Controls Overlay */
+    .map-controls {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      display: flex;
+      gap: 10px;
+      z-index: 5;
+      pointer-events: auto;
+      transition: opacity 0.3s ease;
+    }
+
+    .map-controls.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .map-control-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(9, 9, 12, 0.85);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border);
+      color: white;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
+    }
+
+    .map-control-btn:hover {
+      background: rgba(255, 31, 61, 0.25);
+      border-color: rgba(255, 31, 61, 0.6);
+      transform: translateY(-2px);
+    }
+
+    .map-control-btn:active {
+      transform: translateY(-1px);
+    }
+
     /* Map Placeholder */
     .map-placeholder {
       width: 100%;
@@ -803,6 +849,24 @@
       Découvrez l'aperçu de la taille actuelle de notre map 3D Interactive !
     </p>
     <div class="map-container-wrapper" id="map-wrapper">
+      <!-- Controls shown only when map is loaded -->
+      <div class="map-controls hidden" id="map-controls">
+        <button class="map-control-btn" id="btn-fullscreen" title="Mettre en plein écran">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display: block;">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+          </svg>
+          <span>Plein écran</span>
+        </button>
+        <a href="https://jungle.mystrator.com/s/8c2e7325-acfe-4854-82ef-7929682dfbf1/" target="_blank" class="map-control-btn" title="Ouvrir dans un nouvel onglet">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display: block;">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+          <span>Ouvrir en grand</span>
+        </a>
+      </div>
+
       <!-- Placeholder displayed before map is unlocked -->
       <div class="map-placeholder" id="map-placeholder">
         <div class="map-placeholder-content">
@@ -935,8 +999,10 @@
     const mapPlaceholder = document.getElementById('map-placeholder');
     const mapIframe = document.getElementById('map-iframe');
     const btnLoadMap = document.getElementById('btn-load-map');
+    const mapControls = document.getElementById('map-controls');
+    const btnFullscreen = document.getElementById('btn-fullscreen');
 
-    if (mapWrapper && mapPlaceholder && mapIframe && btnLoadMap) {
+    if (mapWrapper && mapPlaceholder && mapIframe && btnLoadMap && mapControls && btnFullscreen) {
       const mapUrl = mapIframe.getAttribute('data-src');
       let isMapUnlocked = false;
 
@@ -945,7 +1011,19 @@
         isMapUnlocked = true;
         mapPlaceholder.classList.add('hidden');
         mapIframe.classList.remove('hidden');
+        mapControls.classList.remove('hidden'); // Show map controls
         mapIframe.src = mapUrl; // Load map content
+      });
+
+      // Fullscreen click handler
+      btnFullscreen.addEventListener('click', () => {
+        if (mapIframe.requestFullscreen) {
+          mapIframe.requestFullscreen();
+        } else if (mapIframe.webkitRequestFullscreen) {
+          mapIframe.webkitRequestFullscreen();
+        } else if (mapIframe.msRequestFullscreen) {
+          mapIframe.msRequestFullscreen();
+        }
       });
 
       // Viewport resource manager: unloads WebGL context when off-screen
