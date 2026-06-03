@@ -65,11 +65,12 @@
       left: 15%;
       width: 600px;
       height: 600px;
-      background: radial-gradient(circle, var(--red-glow) 0%, transparent 70%);
-      opacity: 0.5;
+      background: radial-gradient(circle, var(--red-glow) 0%, rgba(255, 31, 61, 0) 70%);
+      opacity: 0.45;
       z-index: 0;
       pointer-events: none;
-      filter: blur(80px);
+      will-change: transform;
+      transform: translate3d(0, 0, 0);
     }
 
     .bg-glow-2 {
@@ -78,21 +79,24 @@
       right: 10%;
       width: 500px;
       height: 500px;
-      background: radial-gradient(circle, rgba(255, 31, 61, 0.1) 0%, transparent 70%);
-      opacity: 0.4;
+      background: radial-gradient(circle, rgba(255, 31, 61, 0.08) 0%, rgba(255, 31, 61, 0) 70%);
+      opacity: 0.35;
       z-index: 0;
       pointer-events: none;
-      filter: blur(100px);
+      will-change: transform;
+      transform: translate3d(0, 0, 0);
     }
 
     /* Wave effect background lines */
     .bg-grid {
       position: fixed;
       inset: 0;
-      background-image: radial-gradient(rgba(255, 255, 255, 0.015) 1.5px, transparent 1.5px);
+      background-image: radial-gradient(rgba(255, 255, 255, 0.012) 1.5px, transparent 1.5px);
       background-size: 32px 32px;
       z-index: 0;
       pointer-events: none;
+      will-change: transform;
+      transform: translate3d(0, 0, 0);
     }
 
     header {
@@ -160,6 +164,8 @@
       position: relative;
       overflow: hidden;
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      will-change: transform;
+      transform: translate3d(0, 0, 0);
     }
 
     .hero-card::before {
@@ -184,6 +190,7 @@
       margin: 0 auto 24px;
       filter: drop-shadow(0 0 30px var(--red-glow));
       animation: emblemFloat 6s ease-in-out infinite;
+      will-change: transform;
     }
 
     @keyframes emblemFloat {
@@ -715,6 +722,12 @@
 
     .map-warning-text strong {
       color: #ffd200;
+    }
+
+    /* Off-screen rendering optimizations */
+    .features-grid, .steps-grid, .faq-grid {
+      content-visibility: auto;
+      contain-intrinsic-size: 0 400px;
     }
 
     /* Map Offline Overlay */
