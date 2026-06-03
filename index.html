@@ -562,7 +562,7 @@
       position: relative;
       width: 100%;
       height: 550px;
-      margin: 20px 0 60px;
+      margin: 20px 0 24px;
       border-radius: var(--radius);
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
       border: 1px solid var(--glass-border);
@@ -577,6 +577,98 @@
       height: 100%;
       border: none;
       border-radius: inherit;
+      transition: opacity 0.3s ease;
+    }
+
+    .map-iframe.hidden {
+      opacity: 0;
+      pointer-events: none;
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Map Placeholder */
+    .map-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, rgba(255, 31, 61, 0.04) 0%, rgba(5, 5, 7, 0.8) 100%);
+      text-align: center;
+      padding: 40px;
+      transition: opacity 0.3s ease;
+    }
+
+    .map-placeholder.hidden {
+      display: none;
+    }
+
+    .map-placeholder-content {
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .map-icon {
+      color: var(--red);
+      margin-bottom: 20px;
+      filter: drop-shadow(0 0 12px var(--red-glow));
+    }
+
+    .map-placeholder-content h3 {
+      font-family: 'Pixelify Sans', sans-serif;
+      font-size: 24px;
+      margin-bottom: 10px;
+      color: white;
+    }
+
+    .map-placeholder-content p {
+      font-size: 14px;
+      color: var(--text-dim);
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    .btn-load-map {
+      background: linear-gradient(135deg, var(--red) 0%, #b8001a 100%);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 14px 34px;
+      font-size: 16px;
+      font-weight: 700;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(255, 31, 61, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s, background 0.2s;
+    }
+
+    .btn-load-map:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 30px rgba(255, 31, 61, 0.45);
+      background: linear-gradient(135deg, var(--red-2) 0%, var(--red) 100%);
+    }
+
+    .btn-load-map:active {
+      transform: translateY(-1px);
+    }
+
+    /* Warning Text below map */
+    .map-warning-text {
+      max-width: 600px;
+      margin: 0 auto 60px;
+      font-size: 12px;
+      color: var(--text-mute);
+      line-height: 1.6;
+      text-align: center;
+      padding: 0 24px;
+    }
+
+    .map-warning-text strong {
+      color: #ffd200;
     }
   </style>
 </head>
@@ -710,9 +802,29 @@
     <p class="hero-subtitle" style="margin: 0 auto 30px; font-size: 15px; max-width: 600px;">
       Découvrez l'aperçu de la taille actuelle de notre map (monde réel, sans construction).
     </p>
-    <div class="map-container-wrapper">
-      <iframe src="https://jungle.mystrator.com/s/8c2e7325-acfe-4854-82ef-7929682dfbf1/" class="map-iframe" allowfullscreen></iframe>
+    <div class="map-container-wrapper" id="map-wrapper">
+      <!-- Placeholder displayed before map is unlocked -->
+      <div class="map-placeholder" id="map-placeholder">
+        <div class="map-placeholder-content">
+          <svg class="map-icon" viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon>
+            <line x1="9" y1="3" x2="9" y2="18"></line>
+            <line x1="15" y1="6" x2="15" y2="21"></line>
+          </svg>
+          <h3>Carte 3D Interactive</h3>
+          <p>Cliquez sur le bouton ci-dessous pour charger la carte dynamique du monde en temps réel.</p>
+          <button class="btn-load-map" id="btn-load-map">Charger la carte</button>
+        </div>
+      </div>
+      
+      <!-- Actual iframe, dynamically loaded upon unlock -->
+      <iframe data-src="https://jungle.mystrator.com/s/8c2e7325-acfe-4854-82ef-7929682dfbf1/" class="map-iframe hidden" id="map-iframe" allowfullscreen></iframe>
     </div>
+    
+    <!-- performance notice message -->
+    <p class="map-warning-text">
+      <strong>Note de performance :</strong> Le chargement de la carte interactive 3D peut ralentir les ordinateurs modestes. Il est vivement conseillé d'activer l'<strong>accélération matérielle</strong> dans les paramètres de votre navigateur pour éviter les saccades ou les bugs d'affichage.
+    </p>
 
     <!-- FAQ section -->
     <h2 class="section-title">Questions Fréquentes</h2>
@@ -817,6 +929,49 @@
     fetchServerStatus();
     // Refresh status every 60 seconds
     setInterval(fetchServerStatus, 60000);
+
+    // Interactive Map Unlock and Viewport Intersection Optimization
+    const mapWrapper = document.getElementById('map-wrapper');
+    const mapPlaceholder = document.getElementById('map-placeholder');
+    const mapIframe = document.getElementById('map-iframe');
+    const btnLoadMap = document.getElementById('btn-load-map');
+
+    if (mapWrapper && mapPlaceholder && mapIframe && btnLoadMap) {
+      const mapUrl = mapIframe.getAttribute('data-src');
+      let isMapUnlocked = false;
+
+      // Unlock map on button click
+      btnLoadMap.addEventListener('click', () => {
+        isMapUnlocked = true;
+        mapPlaceholder.classList.add('hidden');
+        mapIframe.classList.remove('hidden');
+        mapIframe.src = mapUrl; // Load map content
+      });
+
+      // Viewport resource manager: unloads WebGL context when off-screen
+      const observer = new IntersectionObserver((entries) => {
+        if (!isMapUnlocked) return; // Only run optimizations if user loaded the map
+
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            // Restore map source when back in viewport
+            if (mapIframe.src !== mapUrl) {
+              mapIframe.src = mapUrl;
+            }
+          } else {
+            // Point to about:blank to immediately unload WebGL and release memory/GPU threads
+            if (mapIframe.src && mapIframe.src !== 'about:blank') {
+              mapIframe.src = 'about:blank';
+            }
+          }
+        });
+      }, {
+        rootMargin: '150px', // Load 150px before entering screen for fluid feel
+        threshold: 0.0
+      });
+
+      observer.observe(mapWrapper);
+    }
   </script>
 </body>
 </html>
