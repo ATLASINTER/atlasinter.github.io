@@ -58,6 +58,35 @@
       padding: 0;
     }
 
+    /* Custom Text Selection Highlight */
+    ::selection {
+      background-color: var(--red);
+      color: var(--white);
+    }
+
+    /* Custom Premium Scrollbar */
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 31, 61, 0.25);
+      border-radius: 5px;
+      border: 2px solid var(--bg);
+      transition: background 0.2s;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--red);
+    }
+
+    /* Keyboard Accessibility Focus Outlines */
+    a:focus-visible, button:focus-visible {
+      outline: 2px solid var(--red-2);
+      outline-offset: 4px;
+    }
+
     html, body {
       min-height: 100%;
       background-color: var(--bg);
@@ -294,14 +323,15 @@
       border-radius: var(--radius-sm);
       padding: 30px 24px;
       text-align: left;
-      transition: transform 0.25s, background-color 0.25s;
+      transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), background-color 0.25s, border-color 0.25s, box-shadow 0.25s;
       position: relative;
     }
 
     .feature-card:hover {
-      transform: translateY(-3px);
+      transform: translateY(-5px);
       background-color: rgba(255, 255, 255, 0.04);
-      border-color: rgba(255, 31, 61, 0.25);
+      border-color: rgba(255, 31, 61, 0.35);
+      box-shadow: 0 12px 30px rgba(255, 31, 61, 0.1);
     }
 
     .feature-icon-wrapper {
@@ -399,6 +429,14 @@
       position: relative;
       overflow: hidden;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), background-color 0.25s, border-color 0.25s, box-shadow 0.25s;
+    }
+
+    .step-card:hover {
+      transform: translateY(-5px);
+      background-color: rgba(255, 255, 255, 0.03);
+      border-color: rgba(255, 31, 61, 0.2);
+      box-shadow: 0 12px 30px rgba(255, 31, 61, 0.06);
     }
 
     .step-number {
@@ -443,11 +481,13 @@
       border: 1px solid var(--glass-border);
       border-radius: var(--radius-sm);
       padding: 24px;
-      transition: background-color 0.2s;
+      transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), background-color 0.25s, border-color 0.25s, box-shadow 0.25s;
     }
 
     .faq-card:hover {
       background-color: rgba(255, 255, 255, 0.03);
+      border-color: rgba(255, 31, 61, 0.2);
+      box-shadow: 0 8px 24px rgba(255, 31, 61, 0.05);
     }
 
     .faq-question {
@@ -765,6 +805,27 @@
     .map-offline-overlay.hidden {
       display: none;
     }
+
+    /* Glass Inner Panel Class */
+    .glass-inner {
+      background: rgba(255, 255, 255, 0.015);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    /* Responsive Mobile Optimizations */
+    @media (max-width: 480px) {
+      .hero-card {
+        padding: 40px 20px;
+      }
+      .download-btn {
+        padding: 16px 28px;
+        font-size: 16px;
+        width: 100%;
+        justify-content: center;
+      }
+    }
   </style>
 </head>
 <body>
@@ -789,8 +850,25 @@
       <!-- Status indicator -->
       <div class="status-indicator" id="status-indicator">
         <span class="status-dot"></span>
-        <span class="status-text">Vérification de l'état du serveur...</span>
+        <span class="status-text">Serveur Minecraft Premium</span>
       </div>
+
+      <!-- Fallback styling for no-JS environments -->
+      <noscript>
+        <style>
+          .status-dot {
+            background-color: #ffd200 !important;
+            box-shadow: 0 0 8px rgba(255, 210, 0, 0.6) !important;
+            animation: none !important;
+          }
+          .status-text::after {
+            content: " (Activez JavaScript pour le statut en direct)";
+            font-size: 11px;
+            opacity: 0.85;
+            margin-left: 4px;
+          }
+        </style>
+      </noscript>
 
       <img src="assets/logo.webp" class="hero-emblem" alt="KingNation Emblem">
       <h1 class="hero-title">Jouez sur <span>KingNation</span></h1>
@@ -1017,6 +1095,11 @@
     const statusText = statusIndicator.querySelector('.status-text');
 
     async function fetchServerStatus() {
+      // Set to loading on first check
+      if (statusText.textContent === "Serveur Minecraft Premium") {
+        statusText.textContent = "Vérification de l'état du serveur...";
+      }
+
       let serverIp = 'play.kingnation.fr:25565';
       
       // Attempt to fetch from Gist dynamically
@@ -1033,10 +1116,9 @@
         console.warn("Could not fetch Gist, falling back to default IP:", e);
       }
 
-      // Now query the public Minecraft status API
+      // Now query the public Minecraft status API (sending serverIp directly to support custom ports)
       try {
-        const cleanIp = serverIp.split(':')[0];
-        const statusResponse = await fetch(`https://api.mcsrvstat.us/2/${cleanIp}`);
+        const statusResponse = await fetch(`https://api.mcsrvstat.us/2/${serverIp}`);
         
         if (statusResponse.ok) {
           const data = await statusResponse.json();
@@ -1169,6 +1251,150 @@
       });
 
       observer.observe(mapWrapper);
+    }
+
+    // Synthesized Premium UI Sound Effects using Web Audio API
+    const AudioSFX = {
+      ctx: null,
+      
+      init() {
+        if (!this.ctx) {
+          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      },
+
+      playHover() {
+        try {
+          this.init();
+          const ctx = this.ctx;
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          
+          osc.type = 'sine';
+          // Very short and soft high frequency chime sweep
+          osc.frequency.setValueAtTime(800, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(1300, ctx.currentTime + 0.04);
+          
+          gain.gain.setValueAtTime(0.012, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.04);
+          
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          
+          osc.start();
+          osc.stop(ctx.currentTime + 0.045);
+        } catch (e) {
+          // Audio Context blocked or not supported
+        }
+      },
+
+      playClick() {
+        try {
+          this.init();
+          const ctx = this.ctx;
+          const now = ctx.currentTime;
+          
+          const osc1 = ctx.createOscillator();
+          const osc2 = ctx.createOscillator();
+          const gain = ctx.createGain();
+          
+          osc1.type = 'triangle';
+          osc1.frequency.setValueAtTime(140, now);
+          osc1.frequency.exponentialRampToValueAtTime(280, now + 0.07);
+
+          osc2.type = 'sine';
+          osc2.frequency.setValueAtTime(580, now);
+          osc2.frequency.exponentialRampToValueAtTime(80, now + 0.07);
+          
+          gain.gain.setValueAtTime(0.05, now);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
+          
+          osc1.connect(gain);
+          osc2.connect(gain);
+          gain.connect(ctx.destination);
+          
+          osc1.start();
+          osc2.start();
+          osc1.stop(now + 0.075);
+          osc2.stop(now + 0.075);
+        } catch (e) {}
+      },
+
+      playPowerUp() {
+        try {
+          this.init();
+          const ctx = this.ctx;
+          const now = ctx.currentTime;
+          
+          // Ascending C-Major arpeggio chime for big activations (like loading map)
+          const frequencies = [261.63, 329.63, 392.00, 523.25];
+          frequencies.forEach((freq, index) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now + index * 0.05);
+            
+            gain.gain.setValueAtTime(0.0, now);
+            gain.gain.linearRampToValueAtTime(0.025, now + index * 0.05 + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + index * 0.05 + 0.25);
+            
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            
+            osc.start(now + index * 0.05);
+            osc.stop(now + index * 0.05 + 0.3);
+          });
+        } catch (e) {}
+      }
+    };
+
+    // Dynamically bind sound effects to elements
+    function setupAudioSFX() {
+      const hovers = [
+        '.logo-container',
+        '.header-discord-btn',
+        '.download-btn',
+        '.feature-card',
+        '.step-card',
+        '.faq-card',
+        '.map-action-btn',
+        '.btn-load-map'
+      ];
+      
+      const clicks = [
+        '.header-discord-btn',
+        '.download-btn',
+        '.map-action-btn',
+        '.btn-load-map'
+      ];
+      
+      // Bind hovers
+      document.querySelectorAll(hovers.join(',')).forEach(el => {
+        el.addEventListener('mouseenter', () => AudioSFX.playHover());
+      });
+      
+      // Bind clicks
+      document.querySelectorAll(clicks.join(',')).forEach(el => {
+        el.addEventListener('click', (e) => {
+          // Play click chime for load map button, else normal click
+          if (el.id === 'btn-load-map') {
+            AudioSFX.playPowerUp();
+          } else {
+            AudioSFX.playClick();
+          }
+        });
+      });
+    }
+
+    // Initialize sound effects on load
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', setupAudioSFX);
+    } else {
+      setupAudioSFX();
     }
   </script>
 </body>
