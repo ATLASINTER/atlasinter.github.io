@@ -716,6 +716,28 @@
     .map-warning-text strong {
       color: #ffd200;
     }
+
+    /* Map Offline Overlay */
+    .map-offline-overlay {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(5, 5, 7, 0.96);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      text-align: center;
+      padding: 40px;
+      z-index: 4;
+      transition: opacity 0.3s ease;
+    }
+
+    .map-offline-overlay.hidden {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -880,6 +902,19 @@
           <button class="btn-load-map" id="btn-load-map">Charger la carte</button>
         </div>
       </div>
+
+      <!-- Offline Warning Overlay -->
+      <div class="map-offline-overlay hidden" id="map-offline-overlay">
+        <div class="map-placeholder-content">
+          <svg class="map-icon" viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          <h3>Carte Indisponible</h3>
+          <p>La carte interactive 3D n'est pas accessible car le serveur KingNation est actuellement hors-ligne.</p>
+        </div>
+      </div>
       
       <!-- Actual iframe, dynamically loaded upon unlock -->
       <iframe data-src="https://jungle.mystrator.com/s/8c2e7325-acfe-4854-82ef-7929682dfbf1/" class="map-iframe hidden" id="map-iframe" allowfullscreen></iframe>
@@ -975,10 +1010,12 @@
             statusIndicator.classList.add('online');
             statusIndicator.classList.remove('offline');
             statusText.textContent = `Serveur en ligne — ${data.players.online} joueurs connectés`;
+            updateMapAvailability(true);
           } else {
             statusIndicator.classList.add('offline');
             statusIndicator.classList.remove('online');
             statusText.textContent = `Serveur hors-ligne`;
+            updateMapAvailability(false);
           }
         } else {
           throw new Error("API status request failed");
@@ -987,6 +1024,7 @@
         statusIndicator.classList.add('offline');
         statusIndicator.classList.remove('online');
         statusText.textContent = `Serveur hors-ligne`;
+        updateMapAvailability(false);
       }
     }
 
@@ -1001,13 +1039,51 @@
     const btnLoadMap = document.getElementById('btn-load-map');
     const mapControls = document.getElementById('map-controls');
     const btnFullscreen = document.getElementById('btn-fullscreen');
+    const mapOfflineOverlay = document.getElementById('map-offline-overlay');
 
-    if (mapWrapper && mapPlaceholder && mapIframe && btnLoadMap && mapControls && btnFullscreen) {
-      const mapUrl = mapIframe.getAttribute('data-src');
-      let isMapUnlocked = false;
+    let isMapUnlocked = false;
+    let isServerOnline = true;
+    const mapUrl = mapIframe?.getAttribute('data-src') || '';
 
+    function updateMapAvailability(isOnline) {
+      isServerOnline = isOnline;
+      if (!mapPlaceholder || !btnLoadMap || !mapOfflineOverlay || !mapControls || !mapIframe) return;
+
+      const mapTitle = mapPlaceholder.querySelector('h3');
+      const mapDesc = mapPlaceholder.querySelector('p');
+
+      if (isOnline) {
+        mapOfflineOverlay.classList.add('hidden');
+        if (isMapUnlocked) {
+          mapControls.classList.remove('hidden');
+        } else {
+          mapTitle.textContent = "Carte 3D Interactive";
+          mapDesc.textContent = "Cliquez sur le bouton ci-dessous pour charger la carte dynamique du monde en temps réel.";
+          btnLoadMap.textContent = "Charger la carte";
+          btnLoadMap.disabled = false;
+          btnLoadMap.style.opacity = "1";
+          btnLoadMap.style.pointerEvents = "auto";
+        }
+      } else {
+        if (isMapUnlocked) {
+          mapOfflineOverlay.classList.remove('hidden');
+          mapControls.classList.add('hidden');
+          mapIframe.src = 'about:blank'; // immediately clear iframe to release resources
+        } else {
+          mapTitle.textContent = "Carte Indisponible";
+          mapDesc.innerHTML = "<strong style='color: var(--red);'>Le serveur KingNation est actuellement hors-ligne.</strong><br>La carte interactive ne peut pas être chargée pour le moment.";
+          btnLoadMap.textContent = "Serveur Hors-ligne";
+          btnLoadMap.disabled = true;
+          btnLoadMap.style.opacity = "0.5";
+          btnLoadMap.style.pointerEvents = "none";
+        }
+      }
+    }
+
+    if (mapWrapper && mapPlaceholder && mapIframe && btnLoadMap && mapControls && btnFullscreen && mapOfflineOverlay) {
       // Unlock map on button click
       btnLoadMap.addEventListener('click', () => {
+        if (!isServerOnline) return;
         isMapUnlocked = true;
         mapPlaceholder.classList.add('hidden');
         mapIframe.classList.remove('hidden');
@@ -1028,7 +1104,7 @@
 
       // Viewport resource manager: unloads WebGL context when off-screen
       const observer = new IntersectionObserver((entries) => {
-        if (!isMapUnlocked) return; // Only run optimizations if user loaded the map
+        if (!isMapUnlocked || !isServerOnline) return; // Only run optimizations if user loaded the map and server is online
 
         entries.forEach(entry => {
           if (entry.isIntersecting) {
