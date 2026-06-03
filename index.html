@@ -1256,6 +1256,7 @@
     // Synthesized Premium UI Sound Effects using Web Audio API
     const AudioSFX = {
       ctx: null,
+      noiseBuffer: null,
       
       init() {
         if (!this.ctx) {
@@ -1263,6 +1264,16 @@
         }
         if (this.ctx.state === 'suspended') {
           this.ctx.resume();
+        }
+        if (!this.noiseBuffer) {
+          // Generate 2 seconds of white noise for explosions and rocket launch hiss
+          const sampleRate = this.ctx.sampleRate;
+          const bufferSize = sampleRate * 2.0;
+          this.noiseBuffer = this.ctx.createBuffer(1, bufferSize, sampleRate);
+          const data = this.noiseBuffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) {
+            data[i] = Math.random() * 2 - 1;
+          }
         }
       },
 
@@ -1347,8 +1358,266 @@
             osc.stop(now + 0.55);
           });
         } catch (e) {}
+      },
+
+      playFireworkLaunch() {
+        try {
+          this.init();
+          const ctx = this.ctx;
+          const now = ctx.currentTime;
+          
+          // Noise source for launch hiss
+          const noise = ctx.createBufferSource();
+          noise.buffer = this.noiseBuffer;
+          
+          const filter = ctx.createBiquadFilter();
+          filter.type = 'bandpass';
+          // Sweep filter frequency upwards for rocket launch whoosh
+          filter.frequency.setValueAtTime(200, now);
+          filter.frequency.exponentialRampToValueAtTime(1600, now + 0.55);
+          filter.Q.setValueAtTime(4.0, now);
+          
+          const gain = ctx.createGain();
+          gain.gain.setValueAtTime(0.0, now);
+          gain.gain.linearRampToValueAtTime(0.18, now + 0.1);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.55);
+          
+          noise.connect(filter);
+          filter.connect(gain);
+          gain.connect(ctx.destination);
+          
+          noise.start(now);
+          noise.stop(now + 0.6);
+        } catch (e) {}
+      },
+
+      playFireworkBlast() {
+        try {
+          this.init();
+          const ctx = this.ctx;
+          const now = ctx.currentTime;
+          
+          // 1. Low bass boom
+          const boomOsc = ctx.createOscillator();
+          const boomGain = ctx.createGain();
+          boomOsc.type = 'sine';
+          boomOsc.frequency.setValueAtTime(90, now);
+          boomOsc.frequency.exponentialRampToValueAtTime(25, now + 0.25);
+          
+          boomGain.gain.setValueAtTime(0.4, now);
+          boomGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+          
+          boomOsc.connect(boomGain);
+          boomGain.connect(ctx.destination);
+          boomOsc.start(now);
+          boomOsc.stop(now + 0.26);
+          
+          // 2. Crackling sparkle noise (Minecraft style)
+          const crackle = ctx.createBufferSource();
+          crackle.buffer = this.noiseBuffer;
+          
+          const filter = ctx.createBiquadFilter();
+          filter.type = 'highpass';
+          filter.frequency.setValueAtTime(1000, now);
+          
+          const crackleGain = ctx.createGain();
+          crackleGain.gain.setValueAtTime(0.15, now);
+          crackleGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.7);
+          
+          crackle.connect(filter);
+          filter.connect(crackleGain);
+          crackleGain.connect(ctx.destination);
+          
+          crackle.start(now);
+          crackle.stop(now + 0.75);
+        } catch (e) {}
+      },
+
+      playDownloadSuccess() {
+        try {
+          this.init();
+          const ctx = this.ctx;
+          const now = ctx.currentTime;
+          
+          // Premium Apple-style success chime (staggered C-major arpeggio)
+          const notes = [523.25, 659.25, 783.99, 1046.50];
+          notes.forEach((freq, index) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now + index * 0.08);
+            
+            gain.gain.setValueAtTime(0, now);
+            gain.gain.linearRampToValueAtTime(0.12, now + index * 0.08 + 0.015);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + index * 0.08 + 0.25);
+            
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            
+            osc.start(now + index * 0.08);
+            osc.stop(now + index * 0.08 + 0.3);
+          });
+        } catch (e) {}
       }
     };
+
+    // Fireworks Canvas Animation System
+    const FireworksSystem = {
+      canvas: null,
+      ctx: null,
+      particles: [],
+      rockets: [],
+      animationId: null,
+
+      init() {
+        if (this.canvas) return;
+        this.canvas = document.createElement('canvas');
+        this.canvas.id = 'fireworks-canvas';
+        this.canvas.style.position = 'fixed';
+        this.canvas.style.inset = '0';
+        this.canvas.style.width = '100vw';
+        this.canvas.style.height = '100vh';
+        this.canvas.style.zIndex = '9999';
+        this.canvas.style.pointerEvents = 'none';
+        document.body.appendChild(this.canvas);
+        this.ctx = this.canvas.getContext('2d');
+
+        window.addEventListener('resize', () => this.resize());
+      },
+
+      resize() {
+        if (this.canvas) {
+          this.canvas.width = window.innerWidth;
+          this.canvas.height = window.innerHeight;
+        }
+      },
+
+      spawn(x, targetY, colors) {
+        this.init();
+        this.resize();
+        
+        const startY = this.canvas.height;
+        
+        this.rockets.push({
+          x: x,
+          y: startY,
+          ty: targetY,
+          colors: colors || ['#ff1f3d', '#ffd200', '#ffffff']
+        });
+
+        // Play launch sound
+        AudioSFX.playFireworkLaunch();
+
+        if (!this.animationId) {
+          this.loop();
+        }
+      },
+
+      explode(x, y, colors) {
+        // Play blast sound
+        AudioSFX.playFireworkBlast();
+
+        const count = 70;
+        for (let i = 0; i < count; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = Math.random() * 5 + 1.5;
+          this.particles.push({
+            x: x,
+            y: y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            alpha: 1.0,
+            decay: Math.random() * 0.015 + 0.012,
+            gravity: 0.06
+          });
+        }
+      },
+
+      loop() {
+        const w = this.canvas.width;
+        const h = this.canvas.height;
+        
+        // Trail effect on alpha channel (canvas remains transparent)
+        this.ctx.globalCompositeOperation = 'destination-out';
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        this.ctx.fillRect(0, 0, w, h);
+        
+        this.ctx.globalCompositeOperation = 'source-over';
+
+        // Update & Draw Rockets
+        for (let i = this.rockets.length - 1; i >= 0; i--) {
+          const r = this.rockets[i];
+          r.y -= 10; // rocket speed
+          
+          this.ctx.beginPath();
+          this.ctx.arc(r.x, r.y, 2.5, 0, Math.PI * 2);
+          this.ctx.fillStyle = '#ff4a63';
+          this.ctx.fill();
+
+          // Spark trail
+          this.ctx.beginPath();
+          this.ctx.arc(r.x + (Math.random() * 4 - 2), r.y + 5, 1, 0, Math.PI * 2);
+          this.ctx.fillStyle = '#ffd200';
+          this.ctx.fill();
+
+          if (r.y <= r.ty) {
+            this.explode(r.x, r.y, r.colors);
+            this.rockets.splice(i, 1);
+          }
+        }
+
+        // Update & Draw Particles
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+          const p = this.particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += p.gravity;
+          p.alpha -= p.decay;
+
+          if (p.alpha <= 0) {
+            this.particles.splice(i, 1);
+            continue;
+          }
+
+          this.ctx.save();
+          this.ctx.globalAlpha = p.alpha;
+          this.ctx.beginPath();
+          this.ctx.arc(p.x, p.y, Math.random() * 2 + 1, 0, Math.PI * 2);
+          this.ctx.fillStyle = p.color;
+          this.ctx.shadowBlur = 4;
+          this.ctx.shadowColor = p.color;
+          this.ctx.fill();
+          this.ctx.restore();
+        }
+
+        if (this.rockets.length === 0 && this.particles.length === 0) {
+          this.ctx.clearRect(0, 0, w, h);
+          this.animationId = null;
+        } else {
+          this.animationId = requestAnimationFrame(() => this.loop());
+        }
+      }
+    };
+
+    function triggerDownloadCelebration() {
+      // Play download success chime
+      AudioSFX.playDownloadSuccess();
+
+      // Launch fireworks show
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      
+      const themeColors = ['#ff1f3d', '#ffd200', '#ffffff'];
+
+      // Spawn sequence with nice spacing
+      setTimeout(() => FireworksSystem.spawn(width * 0.5, height * 0.35, ['#ff1f3d', '#ffffff']), 0);
+      setTimeout(() => FireworksSystem.spawn(width * 0.3, height * 0.28, ['#ffd200', '#ff1f3d']), 250);
+      setTimeout(() => FireworksSystem.spawn(width * 0.7, height * 0.32, ['#ffffff', '#ffd200']), 500);
+      setTimeout(() => FireworksSystem.spawn(width * 0.45, height * 0.22, ['#ff1f3d', '#ffd200']), 750);
+      setTimeout(() => FireworksSystem.spawn(width * 0.58, height * 0.4, themeColors), 1000);
+    }
 
     // Dynamically bind sound effects to elements
     function setupAudioSFX() {
@@ -1378,8 +1647,9 @@
       // Bind clicks
       document.querySelectorAll(clicks.join(',')).forEach(el => {
         el.addEventListener('click', (e) => {
-          // Play click chime for load map button, else normal click
-          if (el.id === 'btn-load-map') {
+          if (el.classList.contains('download-btn')) {
+            triggerDownloadCelebration();
+          } else if (el.id === 'btn-load-map') {
             AudioSFX.playPowerUp();
           } else {
             AudioSFX.playClick();
