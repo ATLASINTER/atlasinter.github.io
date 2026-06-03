@@ -109,16 +109,16 @@
     .logo-container {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       text-decoration: none;
       color: inherit;
     }
 
     .logo-img {
-      width: 42px;
-      height: 42px;
+      width: 30px;
+      height: 30px;
       object-fit: contain;
-      filter: drop-shadow(0 0 10px var(--red-glow));
+      filter: drop-shadow(0 0 8px var(--red-glow)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
       transition: transform 0.3s ease;
     }
 
@@ -131,6 +131,8 @@
       font-weight: 800;
       letter-spacing: 0.15em;
       font-family: 'Pixelify Sans', sans-serif;
+      line-height: 1;
+      padding-top: 2px;
     }
 
     .brand-accent {
@@ -554,120 +556,26 @@
       text-decoration: underline;
     }
 
-    /* Carousel */
-    .carousel-container {
+    /* Map */
+    .map-container-wrapper {
       position: relative;
       width: 100%;
-      height: 400px;
-      margin: 40px 0 60px;
-      overflow: hidden;
+      height: 550px;
+      margin: 20px 0 60px;
       border-radius: var(--radius);
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
       border: 1px solid var(--glass-border);
+      background: rgba(9, 9, 12, 0.45);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      overflow: hidden;
     }
 
-    .carousel-track {
+    .map-iframe {
       width: 100%;
       height: 100%;
-      position: relative;
-    }
-
-    .carousel-slide {
-      position: absolute;
-      inset: 0;
-      background-size: cover;
-      background-position: center;
-      opacity: 0;
-      transition: opacity 0.6s ease-in-out;
-      display: flex;
-      align-items: flex-end;
-      text-align: left;
-      pointer-events: none;
-    }
-
-    .carousel-slide.active {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .carousel-slide::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(180deg, transparent 40%, rgba(5, 5, 7, 0.95) 100%);
-      z-index: 1;
-    }
-
-    .slide-content {
-      position: relative;
-      z-index: 2;
-      padding: 40px;
-      max-width: 600px;
-    }
-
-    .slide-content h3 {
-      font-family: 'Pixelify Sans', sans-serif;
-      font-size: 24px;
-      margin-bottom: 8px;
-      color: white;
-      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-    }
-
-    .slide-content p {
-      font-size: 14px;
-      color: var(--text-dim);
-      line-height: 1.4;
-    }
-
-    .carousel-btn {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: rgba(9, 9, 12, 0.6);
-      border: 1px solid var(--glass-border);
-      color: white;
-      cursor: pointer;
-      display: grid;
-      place-items: center;
-      z-index: 10;
-      backdrop-filter: blur(10px);
-      transition: background-color 0.2s, transform 0.2s;
-    }
-
-    .carousel-btn:hover {
-      background: var(--red);
-      border-color: var(--red-2);
-      transform: translateY(-50%) scale(1.05);
-    }
-
-    .prev-btn { left: 20px; }
-    .next-btn { right: 20px; }
-
-    .carousel-indicators {
-      position: absolute;
-      bottom: 20px;
-      right: 40px;
-      display: flex;
-      gap: 8px;
-      z-index: 10;
-    }
-
-    .indicator {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.3);
-      cursor: pointer;
-      transition: background-color 0.2s, transform 0.2s;
-    }
-
-    .indicator.active {
-      background: var(--red);
-      transform: scale(1.2);
-      box-shadow: 0 0 8px var(--red-glow);
+      border: none;
+      border-radius: inherit;
     }
   </style>
 </head>
@@ -796,40 +704,13 @@
       </div>
     </div>
 
-    <!-- Galerie / Screenshots Carousel -->
-    <h2 class="section-title">Aperçu du Serveur</h2>
-    <div class="carousel-container">
-      <div class="carousel-track">
-        <div class="carousel-slide active" style="background-image: url('assets/screenshot1.png')">
-          <div class="slide-content">
-            <h3>Le Spawn Principal</h3>
-            <p>Découvrez notre spawn immersif et rencontrez les autres joueurs dès votre arrivée.</p>
-          </div>
-        </div>
-        <div class="carousel-slide" style="background-image: url('assets/screenshot2.png')">
-          <div class="slide-content">
-            <h3>Des Paysages Uniques</h3>
-            <p>Explorez un monde magnifique regorgeant de ressources et de structures personnalisées.</p>
-          </div>
-        </div>
-        <div class="carousel-slide" style="background-image: url('assets/screenshot3.png')">
-          <div class="slide-content">
-            <h3>PvP & Faction Épique</h3>
-            <p>Créez votre faction, construisez votre base et combattez pour dominer le serveur.</p>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Nav Buttons -->
-      <button class="carousel-btn prev-btn" id="carousel-prev" aria-label="Précédent">&larr;</button>
-      <button class="carousel-btn next-btn" id="carousel-next" aria-label="Suivant">&rarr;</button>
-      
-      <!-- Indicators -->
-      <div class="carousel-indicators">
-        <span class="indicator active" data-slide="0"></span>
-        <span class="indicator" data-slide="1"></span>
-        <span class="indicator" data-slide="2"></span>
-      </div>
+    <!-- Carte Interactive / Map Overview -->
+    <h2 class="section-title">Carte du Monde</h2>
+    <p class="hero-subtitle" style="margin: 0 auto 30px; font-size: 15px; max-width: 600px;">
+      Découvrez l'aperçu de la taille actuelle de notre map (monde réel, sans construction).
+    </p>
+    <div class="map-container-wrapper">
+      <iframe src="https://jungle.mystrator.com/s/8c2e7325-acfe-4854-82ef-7929682dfbf1/" class="map-iframe" allowfullscreen></iframe>
     </div>
 
     <!-- FAQ section -->
@@ -882,38 +763,8 @@
     </div>
   </footer>
 
-  <!-- Script tags for Carousel and Status API -->
+  <!-- Script tags for Status API -->
   <script>
-    // Carousel JavaScript
-    const slides = document.querySelectorAll('.carousel-slide');
-    const indicators = document.querySelectorAll('.indicator');
-    const prevBtn = document.getElementById('carousel-prev');
-    const nextBtn = document.getElementById('carousel-next');
-    let currentSlide = 0;
-
-    function showSlide(index) {
-      if (slides.length === 0) return;
-      slides[currentSlide].classList.remove('active');
-      indicators[currentSlide].classList.remove('active');
-      
-      currentSlide = (index + slides.length) % slides.length;
-      
-      slides[currentSlide].classList.add('active');
-      indicators[currentSlide].classList.add('active');
-    }
-
-    prevBtn?.addEventListener('click', () => showSlide(currentSlide - 1));
-    nextBtn?.addEventListener('click', () => showSlide(currentSlide + 1));
-    
-    indicators.forEach((ind, index) => {
-      ind.addEventListener('click', () => showSlide(index));
-    });
-
-    // Auto slide every 5 seconds
-    setInterval(() => {
-      showSlide(currentSlide + 1);
-    }, 5000);
-
     // Player Count & Gist fetch JavaScript
     const GIST_ID = '720b73fd93d999f462c368c96ae980d4';
     const statusIndicator = document.getElementById('status-indicator');
