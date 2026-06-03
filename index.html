@@ -453,6 +453,222 @@
       line-height: 1.5;
       padding-left: 26px;
     }
+
+    /* Header Discord Button */
+    .header-discord-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 8px 18px;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: white;
+      text-decoration: none;
+      box-shadow: var(--shadow-soft);
+      transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
+    }
+
+    .header-discord-btn:hover {
+      background: rgba(88, 101, 242, 0.15);
+      border-color: rgba(88, 101, 242, 0.5);
+      transform: translateY(-1px);
+    }
+
+    /* Status Indicator */
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--glass-border);
+      padding: 8px 16px;
+      border-radius: 50px;
+      font-size: 13px;
+      font-weight: 600;
+      margin: 0 auto 24px;
+      color: var(--text-dim);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+    
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background-color: #ffd200;
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(255, 210, 0, 0.6);
+    }
+    
+    .status-indicator.online .status-dot {
+      background-color: #2ed573;
+      box-shadow: 0 0 10px rgba(46, 213, 115, 0.8);
+      animation: statusPulse 2s infinite alternate;
+    }
+
+    .status-indicator.offline .status-dot {
+      background-color: var(--red);
+      box-shadow: 0 0 10px rgba(255, 31, 61, 0.8);
+    }
+
+    @keyframes statusPulse {
+      0% { transform: scale(1); opacity: 0.8; }
+      100% { transform: scale(1.15); opacity: 1; }
+    }
+
+    /* SmartScreen Notice */
+    .smartscreen-notice {
+      max-width: 540px;
+      margin: 32px auto 0;
+      padding: 16px 20px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255, 210, 0, 0.15);
+      background: rgba(255, 210, 0, 0.02);
+      text-align: left;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .notice-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #ffd200;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .notice-icon {
+      flex-shrink: 0;
+    }
+
+    .notice-body {
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: var(--text-dim);
+    }
+
+    .notice-body span {
+      color: white;
+      font-weight: 700;
+      text-decoration: underline;
+    }
+
+    /* Carousel */
+    .carousel-container {
+      position: relative;
+      width: 100%;
+      height: 400px;
+      margin: 40px 0 60px;
+      overflow: hidden;
+      border-radius: var(--radius);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--glass-border);
+    }
+
+    .carousel-track {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .carousel-slide {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      transition: opacity 0.6s ease-in-out;
+      display: flex;
+      align-items: flex-end;
+      text-align: left;
+      pointer-events: none;
+    }
+
+    .carousel-slide.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .carousel-slide::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 40%, rgba(5, 5, 7, 0.95) 100%);
+      z-index: 1;
+    }
+
+    .slide-content {
+      position: relative;
+      z-index: 2;
+      padding: 40px;
+      max-width: 600px;
+    }
+
+    .slide-content h3 {
+      font-family: 'Pixelify Sans', sans-serif;
+      font-size: 24px;
+      margin-bottom: 8px;
+      color: white;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .slide-content p {
+      font-size: 14px;
+      color: var(--text-dim);
+      line-height: 1.4;
+    }
+
+    .carousel-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(9, 9, 12, 0.6);
+      border: 1px solid var(--glass-border);
+      color: white;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      z-index: 10;
+      backdrop-filter: blur(10px);
+      transition: background-color 0.2s, transform 0.2s;
+    }
+
+    .carousel-btn:hover {
+      background: var(--red);
+      border-color: var(--red-2);
+      transform: translateY(-50%) scale(1.05);
+    }
+
+    .prev-btn { left: 20px; }
+    .next-btn { right: 20px; }
+
+    .carousel-indicators {
+      position: absolute;
+      bottom: 20px;
+      right: 40px;
+      display: flex;
+      gap: 8px;
+      z-index: 10;
+    }
+
+    .indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.2s;
+    }
+
+    .indicator.active {
+      background: var(--red);
+      transform: scale(1.2);
+      box-shadow: 0 0 8px var(--red-glow);
+    }
   </style>
 </head>
 <body>
@@ -466,10 +682,20 @@
       <img src="assets/logo.png" class="logo-img" alt="KingNation Logo">
       <div class="brand-name">KING<span class="brand-accent">NATION</span></div>
     </a>
+    <a href="https://discord.gg/aPf2v9MduU" target="_blank" class="header-discord-btn">
+      <svg class="discord-icon" viewBox="0 0 24 24" aria-hidden="true" width="16" height="16" style="fill: currentColor; margin-top: 1px;"><path d="M20.32 4.37A19.8 19.8 0 0 0 15.36 2.8a13.6 13.6 0 0 0-.64 1.32 18.4 18.4 0 0 0-5.44 0 13.6 13.6 0 0 0-.64-1.32 19.7 19.7 0 0 0-4.96 1.57C.54 9.02-.32 13.56.1 18.04a19.9 19.9 0 0 0 6.08 3.08c.48-.66.92-1.36 1.3-2.1-.72-.27-1.4-.6-2.04-.98.17-.12.34-.25.5-.38a14.2 14.2 0 0 0 12.12 0c.16.13.33.26.5.38-.64.38-1.32.71-2.04.98.38.74.82 1.44 1.3 2.1a19.9 19.9 0 0 0 6.08-3.08c.5-5.2-.86-9.7-3.58-13.67ZM8.02 15.3c-1.18 0-2.14-1.08-2.14-2.4s.94-2.4 2.14-2.4c1.2 0 2.16 1.08 2.14 2.4 0 1.32-.94 2.4-2.14 2.4Zm7.96 0c-1.18 0-2.14-1.08-2.14-2.4s.94-2.4 2.14-2.4c1.2 0 2.16 1.08 2.14 2.4 0 1.32-.94 2.4-2.14 2.4Z"/></svg>
+      <span>Discord</span>
+    </a>
   </header>
 
   <main class="main-container">
     <div class="hero-card">
+      <!-- Status indicator -->
+      <div class="status-indicator" id="status-indicator">
+        <span class="status-dot"></span>
+        <span class="status-text">Vérification de l'état du serveur...</span>
+      </div>
+
       <img src="assets/logo.png" class="hero-emblem" alt="KingNation Emblem">
       <h1 class="hero-title">Jouez sur <span>KingNation</span></h1>
       <p class="hero-subtitle">
@@ -486,6 +712,21 @@
       
       <div class="meta-info">
         Compte Premium requis | Des questions ? Rejoignez notre <a href="https://discord.gg/aPf2v9MduU" target="_blank">Discord</a>
+      </div>
+
+      <!-- SmartScreen Notice -->
+      <div class="smartscreen-notice glass-inner">
+        <div class="notice-header">
+          <svg class="notice-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <strong>Alerte de sécurité Windows (SmartScreen) ?</strong>
+        </div>
+        <p class="notice-body">
+          Lors du lancement, Windows peut afficher une alerte bleue. Cliquez simplement sur <span>Informations complémentaires</span> puis sur <span>Exécuter quand même</span>. Notre launcher est 100% sécurisé et cette alerte est uniquement due au fait que l'application est récente.
+        </p>
       </div>
     </div>
 
@@ -605,5 +846,89 @@
     </div>
   </footer>
 
+  <!-- Script tags for Carousel and Status API -->
+  <script>
+    // Carousel JavaScript
+    const slides = document.querySelectorAll('.carousel-slide');
+    const indicators = document.querySelectorAll('.indicator');
+    const prevBtn = document.getElementById('carousel-prev');
+    const nextBtn = document.getElementById('carousel-next');
+    let currentSlide = 0;
+
+    function showSlide(index) {
+      if (slides.length === 0) return;
+      slides[currentSlide].classList.remove('active');
+      indicators[currentSlide].classList.remove('active');
+      
+      currentSlide = (index + slides.length) % slides.length;
+      
+      slides[currentSlide].classList.add('active');
+      indicators[currentSlide].classList.add('active');
+    }
+
+    prevBtn?.addEventListener('click', () => showSlide(currentSlide - 1));
+    nextBtn?.addEventListener('click', () => showSlide(currentSlide + 1));
+    
+    indicators.forEach((ind, index) => {
+      ind.addEventListener('click', () => showSlide(index));
+    });
+
+    // Auto slide every 5 seconds
+    setInterval(() => {
+      showSlide(currentSlide + 1);
+    }, 5000);
+
+    // Player Count & Gist fetch JavaScript
+    const GIST_ID = '720b73fd93d999f462c368c96ae980d4';
+    const statusIndicator = document.getElementById('status-indicator');
+    const statusText = statusIndicator.querySelector('.status-text');
+
+    async function fetchServerStatus() {
+      let serverIp = 'play.kingnation.fr:25565';
+      
+      // Attempt to fetch from Gist dynamically
+      try {
+        const gistResponse = await fetch(`https://api.github.com/gists/${GIST_ID}`);
+        if (gistResponse.ok) {
+          const gistData = await gistResponse.json();
+          const configContent = JSON.parse(gistData.files['kingnation-config.json'].content);
+          if (configContent.serverIp || configContent.ip) {
+            serverIp = configContent.serverIp || configContent.ip;
+          }
+        }
+      } catch (e) {
+        console.warn("Could not fetch Gist, falling back to default IP:", e);
+      }
+
+      // Now query the public Minecraft status API
+      try {
+        const cleanIp = serverIp.split(':')[0];
+        const statusResponse = await fetch(`https://api.mcsrvstat.us/2/${cleanIp}`);
+        
+        if (statusResponse.ok) {
+          const data = await statusResponse.json();
+          if (data.online) {
+            statusIndicator.classList.add('online');
+            statusIndicator.classList.remove('offline');
+            statusText.textContent = `Serveur en ligne — ${data.players.online} joueurs connectés`;
+          } else {
+            statusIndicator.classList.add('offline');
+            statusIndicator.classList.remove('online');
+            statusText.textContent = `Serveur hors-ligne`;
+          }
+        } else {
+          throw new Error("API status request failed");
+        }
+      } catch (e) {
+        statusIndicator.classList.add('offline');
+        statusIndicator.classList.remove('online');
+        statusText.textContent = `Serveur hors-ligne`;
+      }
+    }
+
+    fetchServerStatus();
+    // Refresh status every 60 seconds
+    setInterval(fetchServerStatus, 60000);
+  </script>
 </body>
 </html>
