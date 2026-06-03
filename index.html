@@ -109,6 +109,7 @@
       pointer-events: none;
       will-change: transform;
       transform: translate3d(0, 0, 0);
+      animation: glowMove1 22s ease-in-out infinite;
     }
 
     .bg-glow-2 {
@@ -123,6 +124,7 @@
       pointer-events: none;
       will-change: transform;
       transform: translate3d(0, 0, 0);
+      animation: glowMove2 28s ease-in-out infinite;
     }
 
     /* Wave effect background lines */
@@ -135,6 +137,52 @@
       pointer-events: none;
       will-change: transform;
       transform: translate3d(0, 0, 0);
+      animation: gridScroll 16s linear infinite;
+    }
+
+    /* Background Ambient Particle Embers */
+    .bg-particle {
+      position: fixed;
+      bottom: -20px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      will-change: transform, opacity;
+      animation: floatParticle 20s linear infinite;
+    }
+
+    @keyframes glowMove1 {
+      0% { transform: translate3d(0, 0, 0) scale(1); }
+      50% { transform: translate3d(60px, 40px, 0) scale(1.1); }
+      100% { transform: translate3d(0, 0, 0) scale(1); }
+    }
+
+    @keyframes glowMove2 {
+      0% { transform: translate3d(0, 0, 0) scale(1); }
+      50% { transform: translate3d(-50px, -30px, 0) scale(0.92); }
+      100% { transform: translate3d(0, 0, 0) scale(1); }
+    }
+
+    @keyframes gridScroll {
+      0% { background-position: 0 0; }
+      100% { background-position: 32px 32px; }
+    }
+
+    @keyframes floatParticle {
+      0% {
+        transform: translate3d(0, 0, 0) scale(1);
+        opacity: 0;
+      }
+      15% {
+        opacity: 0.12;
+      }
+      85% {
+        opacity: 0.12;
+      }
+      100% {
+        transform: translate3d(30px, -110vh, 0) scale(0.4);
+        opacity: 0;
+      }
     }
 
     header {
@@ -1658,11 +1706,52 @@
       });
     }
 
-    // Initialize sound effects on load
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', setupAudioSFX);
-    } else {
+    // Dynamic floating embers generator
+    function initBackgroundParticles() {
+      const container = document.createElement('div');
+      container.id = 'bg-particles-container';
+      container.style.position = 'fixed';
+      container.style.inset = '0';
+      container.style.pointerEvents = 'none';
+      container.style.zIndex = '0';
+      container.style.overflow = 'hidden';
+      document.body.appendChild(container);
+      
+      const particleCount = 22;
+      for (let i = 0; i < particleCount; i++) {
+        const p = document.createElement('div');
+        p.className = 'bg-particle';
+        
+        const size = Math.random() * 4 + 2; // 2px to 6px
+        const left = Math.random() * 100;
+        const delay = Math.random() * -20; // varied starting points
+        const duration = Math.random() * 12 + 12; // 12s to 24s
+        
+        p.style.width = `${size}px`;
+        p.style.height = `${size}px`;
+        p.style.left = `${left}%`;
+        p.style.animationDelay = `${delay}s`;
+        p.style.animationDuration = `${duration}s`;
+        
+        const isGold = Math.random() > 0.8;
+        p.style.background = isGold ? '#ffd200' : 'var(--red)';
+        p.style.boxShadow = `0 0 8px ${isGold ? '#ffd200' : 'var(--red)'}`;
+        
+        container.appendChild(p);
+      }
+    }
+
+    // Initialize systems on load
+    function initApp() {
       setupAudioSFX();
+      initBackgroundParticles();
+    }
+
+    // Initialize systems on load
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+      initApp();
     }
   </script>
 </body>
