@@ -7,6 +7,23 @@
   <link rel="icon" type="image/webp" href="assets/logo.webp">
   <link rel="shortcut icon" type="image/webp" href="assets/logo.webp">
   
+  <!-- Schema.org JSON-LD Structured Data for SEO -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "KingNation Launcher",
+    "operatingSystem": "Windows",
+    "applicationCategory": "GameApplication",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "EUR"
+    },
+    "description": "Téléchargez le launcher officiel de KingNation pour rejoindre notre serveur Minecraft Premium avec mises à jour automatiques et performances optimisées."
+  }
+  </script>
+  
   <!-- SEO Meta Tags -->
   <meta name="description" content="Téléchargez le Launcher officiel Premium de KingNation. Rejoignez notre serveur Minecraft avec mises à jour automatiques.">
   <meta name="keywords" content="Minecraft, KingNation, Launcher, Télécharger, PvP Faction, Serveur Minecraft">
@@ -1348,7 +1365,7 @@
         statusText.textContent = "Vérification de l'état du serveur...";
       }
 
-      let serverIp = 'play.kingnation.fr:25565';
+      let serverIp = 'kingnation.mine.fun';
       
       // Attempt to fetch from Gist dynamically
       try {
