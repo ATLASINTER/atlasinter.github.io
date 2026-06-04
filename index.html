@@ -69,6 +69,7 @@
       --glass-blur: blur(25px) saturate(180%);
       --radius: 24px;
       --radius-sm: 16px;
+      --shadow-soft: 0 4px 15px rgba(0, 0, 0, 0.2);
     }
 
     * {
@@ -1356,18 +1357,23 @@
   <script>
     // Player Count & Gist fetch JavaScript
     const GIST_ID = '720b73fd93d999f462c368c96ae980d4';
+    const DEFAULT_SERVER_IP = 'kingnation.mine.fun';
+    const GIST_TTL = 10 * 60 * 1000; // re-check the Gist config at most every 10 min (avoids GitHub's 60 req/h/IP rate limit)
     const statusIndicator = document.getElementById('status-indicator');
     const statusText = statusIndicator.querySelector('.status-text');
 
-    async function fetchServerStatus() {
-      // Set to loading on first check
-      if (statusText.textContent === "Serveur Minecraft Premium") {
-        statusText.textContent = "Vérification de l'état du serveur...";
+    let cachedServerIp = null;
+    let gistFetchedAt = 0;
+
+    // Resolve the server IP from the Gist, but cache it so we don't hit GitHub's
+    // unauthenticated API on every 60s status poll (which would exhaust the rate limit).
+    async function resolveServerIp() {
+      const now = Date.now();
+      if (cachedServerIp && (now - gistFetchedAt) < GIST_TTL) {
+        return cachedServerIp;
       }
 
-      let serverIp = 'kingnation.mine.fun';
-      
-      // Attempt to fetch from Gist dynamically
+      let serverIp = cachedServerIp || DEFAULT_SERVER_IP;
       try {
         const gistResponse = await fetch(`https://api.github.com/gists/${GIST_ID}`);
         if (gistResponse.ok) {
@@ -1376,10 +1382,23 @@
           if (configContent.serverIp || configContent.ip) {
             serverIp = configContent.serverIp || configContent.ip;
           }
+          gistFetchedAt = now; // only reset the TTL on a successful fetch
         }
       } catch (e) {
-        console.warn("Could not fetch Gist, falling back to default IP:", e);
+        console.warn("Could not fetch Gist, falling back to cached/default IP:", e);
       }
+
+      cachedServerIp = serverIp;
+      return serverIp;
+    }
+
+    async function fetchServerStatus() {
+      // Set to loading on first check
+      if (statusText.textContent === "Serveur Minecraft Premium") {
+        statusText.textContent = "Vérification de l'état du serveur...";
+      }
+
+      const serverIp = await resolveServerIp();
 
       // Now query the public Minecraft status API (sending serverIp directly to support custom ports)
       try {
