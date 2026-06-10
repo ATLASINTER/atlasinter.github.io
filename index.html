@@ -2140,7 +2140,9 @@
       const bannerMsg = document.getElementById('site-banner-msg');
       if (!banner || !message) return;
       bannerMsg.textContent = message;
-      banner.className = 'site-banner ' + (type || 'info');
+      // Accepte 'warn' comme alias de 'warning'
+      const safeType = (type === 'warn' ? 'warning' : type) || 'info';
+      banner.className = 'site-banner ' + safeType;
     }
 
     async function fetchWebConfig() {
