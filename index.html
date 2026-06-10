@@ -2098,7 +2098,7 @@
 
     // Fetch Discord Widget Stats dynamically via Invite API
     async function fetchDiscordStats() {
-      const inviteCode = 'aPf2v9MduU';
+      const inviteCode = window.dynamicInviteCode || 'aPf2v9MduU';
       try {
         const response = await fetch(`https://discord.com/api/v9/invites/${inviteCode}?with_counts=true`);
         if (response.ok) {
@@ -2195,6 +2195,10 @@
           document.querySelectorAll('a[href*="discord"]').forEach(link => {
             link.href = config.global.discordUrl;
           });
+          const match = config.global.discordUrl.match(/discord\.(?:gg|com\/invite)\/([a-zA-Z0-9-]+)/);
+          if (match && match[1]) {
+            window.dynamicInviteCode = match[1];
+          }
         }
 
       } catch (e) {
@@ -2203,8 +2207,8 @@
     }
 
     // Initialize systems on load
-    function initApp() {
-      fetchWebConfig();       // ← Gist remote control
+    async function initApp() {
+      await fetchWebConfig();       // ← Gist remote control
       setupAudioSFX();
       initBackgroundParticles();
       fetchDiscordStats();
