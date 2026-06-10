@@ -2147,10 +2147,10 @@
 
     async function fetchWebConfig() {
       try {
-        const res = await fetch(`https://api.github.com/gists/${WEB_CONFIG_GIST_ID}`);
+        // Use raw content URL to bypass GitHub API rate limit (60 req/hour)
+        const res = await fetch(`https://gist.githubusercontent.com/ATLASINTER/${WEB_CONFIG_GIST_ID}/raw/kingnation-web-config.json?cache_buster=${Date.now()}`);
         if (!res.ok) return;
-        const gist   = await res.json();
-        const config = JSON.parse(gist.files['kingnation-web-config.json'].content);
+        const config = await res.json();
 
         // 1. MAINTENANCE (priorité maximale — bloque tout le reste)
         if (config.launcher?.maintenance === true) {
